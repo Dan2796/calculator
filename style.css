@@ -1,1 +1,37 @@
 /* style sheet */
+body {
+    display: flex;
+    justify-content: center;
+}
+
+.calculator {
+    border: solid blue 1px;
+    padding: 30px;
+    width: 400px;
+    height: 600px;
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.screen {
+    border: solid green 1px;
+    margin-top: 20px;
+    height: 70px;
+    grid-column-start: 1;
+    grid-column-end: 5;
+}
+
+button {
+    border: solid red 1px;
+    justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    font-size: 20px;
+}
+
+#equals {
+    grid-column-start: 4;
+    grid-row-start: 5;
+    grid-row-end: 7;
+}
