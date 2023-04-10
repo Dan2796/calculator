@@ -161,20 +161,37 @@ function calculateTotal() {
         screenNumber = tooBigMessage;
         clearEverything(true);
     } else {
-        screenNumber = currentNumber.toString();
-        if (screenNumber.length >= 11) {
-            if (currentNumber < 10) {
-                screenNumber = parseFloat(screenNumber).toPrecision(9);
-            } else if (currentNumber >= 1e10) {
-                screenNumber = parseFloat(parseFloat(screenNumber).toPrecision(5)).toExponential();
-            } else if (currentNumber >= 1e100) {
-                screenNumber = parseFloat(parseFloat(screenNumber).toPrecision(4)).toExponential();
-            } else {
-                screenNumber = parseFloat(parseFloat(screenNumber).toPrecision(6)).toExponential();
-            }
-        }
+        screenNumber = trimToScreenSize(currentNumber.toString());
     }
     justCalculated = true;
     readyForNewNumber = true;
     refreshScreen();
+}
+
+function trimToScreenSize(number) {
+    if (number.length >= 11) {
+        number = parseFloat(number).toPrecision(10);
+    }
+    if (number.length >= 11) { // if still too long:
+        number = parseFloat(number).toPrecision(9);
+    }
+    if (number.length >= 11) { // if still too long:
+        number = parseFloat(number).toPrecision(8);
+    }
+    if (number.length >= 11) { // if still too long:
+        number = parseFloat(number).toPrecision(7);
+    }
+    if (number.length >= 11) { // if still too long:
+        number = parseFloat(number).toPrecision(6);
+    }
+    if (number.length >= 11) { // if still too long, now fix to exponential
+        number = parseFloat(parseFloat(number).toPrecision(6)).toExponential();
+    }
+    if (number.length >= 11) { // if still too long, now fix to exponential
+        number = parseFloat(parseFloat(number).toPrecision(5)).toExponential();
+    }
+    if (number.length >= 11) { // if still too long, now fix to exponential
+        number = parseFloat(parseFloat(number).toPrecision(4)).toExponential();
+    }
+    return number;
 }
