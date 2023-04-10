@@ -60,6 +60,12 @@ function onOperator(operator) {
     if (currentOperator !== null && !readyForNewNumber) {
         calculateTotal();
     } else if (currentOperator === null) {
+        if (operator === '-' && readyForNewNumber) { // allow for minus as a first digit
+            screenNumber = "-";
+            readyForNewNumber = false;
+            refreshScreen();
+            return;
+        }
         currentTotal = currentNumber;
     }
     readyForNewNumber = true;
