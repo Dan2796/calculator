@@ -23,6 +23,34 @@ document.querySelector('#backspace').addEventListener('click', () => removeLastC
 
 const screen = document.querySelector('.screen');
 
+// keyboard functions:
+document.addEventListener('keydown', (event) => {
+    if (event.key === '0') onDigit('0');
+    if (event.key === '1') onDigit('1');
+    if (event.key === '2') onDigit('2');
+    if (event.key === '3') onDigit('3');
+    if (event.key === '4') onDigit('4');
+    if (event.key === '5') onDigit('5');
+    if (event.key === '6') onDigit('6');
+    if (event.key === '7') onDigit('7');
+    if (event.key === '8') onDigit('8');
+    if (event.key === '9') onDigit('9');
+    if (event.key === '.') onDigit('.');
+    if (event.key === '+') onOperator('+'); // needs shift
+    if (event.key === '-') onOperator('-');
+    if (event.key === '*') onOperator('*');
+    if (event.key === '/') {
+        event.preventDefault(); // to avoid find bar being brought up
+        onOperator('/') ;
+    }
+    if (event.key === '=') calculateTotal();
+    if (event.key === 'Enter') calculateTotal();
+    if (event.shiftKey && event.key === '+') onOperator('+');
+    if (event.key === '-') onOperator('-');
+    if (event.shiftKey && event.key === '*') onOperator('*');
+    if (event.key === 'Backspace') removeLastCharacter();
+})
+
 let currentNumber = 0; // need this to track decimals to higher precision than screen can show
 let latestEnteredNumber = 0; // need this to be able to tap equals repeatedly and do last calculation
 let screenNumber = currentNumber.toString();
