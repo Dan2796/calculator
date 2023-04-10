@@ -32,6 +32,9 @@ let currentOperator = null;
 let justCalculated = false;
 refreshScreen();
 
+let errorMessage = 'Error.';
+let tooBigMessage = 'Too big.';
+
 function refreshScreen() {
    screen.textContent = screenNumber;
 }
@@ -40,12 +43,12 @@ function onDigit(number) {
     if (screenNumber.length >= 11 && !readyForNewNumber) return; // don't let it run out of space
     if (readyForNewNumber) {
         screenNumber = number;
-        currentNumber = parseInt(screenNumber);
+        currentNumber = parseFloat(screenNumber);
         latestEnteredNumber = currentNumber;
         readyForNewNumber = false;
     } else {
         screenNumber = screenNumber + number; // note it's a string, so this is pasting the digit on to the end
-        currentNumber = parseInt(screenNumber);
+        currentNumber = parseFloat(screenNumber);
         latestEnteredNumber = currentNumber;
     }
     justCalculated = false;
@@ -56,8 +59,7 @@ function onOperator(operator) {
     // only calculate total if haven't just done so and have a previous operator to work with
     if (currentOperator !== null && !readyForNewNumber) {
         calculateTotal();
-    }
-    if (currentOperator == null) {
+    } else if (currentOperator === null) {
         currentTotal = currentNumber;
     }
     readyForNewNumber = true;
@@ -71,8 +73,8 @@ function clearEverything(showError) {
     currentOperator = null;
     if (!showError) {
         screenNumber = currentNumber.toString();
-        refreshScreen();
     }
+    refreshScreen();
 }
 
 function clearDisplay() {
@@ -93,12 +95,13 @@ function removeLastCharacter() {
         readyForNewNumber = true;
     } else {
         screenNumber = screenNumber.slice(0, screenNumber.length - 1);
-        currentNumber = parseInt(screenNumber);
+        currentNumber = parseFloat(screenNumber);
     }
     refreshScreen();
 }
 
 function calculateTotal() {
+    if (screenNumber === errorMessage || screenNumber === tooBigMessage) return; // need a digit if hit an error
     if (currentOperator === '+') {
         currentTotal += latestEnteredNumber;
     } else if (currentOperator === '-') {
@@ -107,33 +110,36 @@ function calculateTotal() {
         currentTotal *= latestEnteredNumber;
     } else if (currentOperator === '/') {
         if (currentNumber === 0) {
-            screenNumber = "Can't do x / 0."
-            currentTotal = 0;
+            screenNumber = 'No ÷ by 0';
+            clearEverything(true);
+            return;
         } else {
             currentTotal /= latestEnteredNumber;
         }
     }
 
     currentNumber = currentTotal;
-    if (screenNumber === "Can't do x / 0") {
-        clearEverything(true);
-    } else if (isNaN(currentTotal)) {
-        screenNumber = "Error.";
+    if (isNaN(currentTotal)) {
+        screenNumber = errorMessage;
         clearEverything(true);
     } else if (currentTotal === Infinity) {
-        screenNumber = "Too big."
+        screenNumber = tooBigMessage;
         clearEverything(true);
     } else {
         screenNumber = currentNumber.toString();
         if (screenNumber.length >= 11) {
-            screenNumber = restrictDigits(screenNumber);
+            if (currentNumber < 10) {
+                screenNumber = parseFloat(screenNumber).toPrecision(9);
+            } else if (currentNumber >= 1e10) {
+                screenNumber = parseFloat(parseFloat(screenNumber).toPrecision(5)).toExponential();
+            } else if (currentNumber >= 1e100) {
+                screenNumber = parseFloat(parseFloat(screenNumber).toPrecision(4)).toExponential();
+            } else {
+                screenNumber = parseFloat(parseFloat(screenNumber).toPrecision(6)).toExponential();
+            }
         }
     }
     justCalculated = true;
     readyForNewNumber = true;
     refreshScreen();
-}
-
-function restrictDigits(numberAsString) {
-    return numberAsString;
 }
