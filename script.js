@@ -17,16 +17,19 @@ document.querySelector('#minus').addEventListener('click', () => onOperator('-')
 document.querySelector('#multiply').addEventListener('click', () => onOperator('*'));
 document.querySelector('#divide').addEventListener('click', () => onOperator('/'));
 
-document.querySelector('#allClear').addEventListener('click', () => clearEverything());
+document.querySelector('#allClear').addEventListener('click', () => clearEverything(false));
 document.querySelector('#clear').addEventListener('click', () => clearDisplay());
 document.querySelector('#backspace').addEventListener('click', () => removeLastCharacter());
 
 const screen = document.querySelector('.screen');
 
-let screenNumber = '0';
+let currentNumber = 0; // need this to track decimals to higher precision than screen can show
+let latestEnteredNumber = 0; // need this to be able to tap equals repeatedly and do last calculation
+let screenNumber = currentNumber.toString();
 let readyForNewNumber = true;
 let currentTotal = 0;
 let currentOperator = null;
+let justCalculated = false;
 refreshScreen();
 
 function refreshScreen() {
@@ -34,13 +37,18 @@ function refreshScreen() {
 }
 
 function onDigit(number) {
-    if (screenNumber.length >= 11) return; // don't let it run out of space
+    if (screenNumber.length >= 11 && !readyForNewNumber) return; // don't let it run out of space
     if (readyForNewNumber) {
         screenNumber = number;
+        currentNumber = parseInt(screenNumber);
+        latestEnteredNumber = currentNumber;
         readyForNewNumber = false;
     } else {
         screenNumber = screenNumber + number; // note it's a string, so this is pasting the digit on to the end
+        currentNumber = parseInt(screenNumber);
+        latestEnteredNumber = currentNumber;
     }
+    justCalculated = false;
     refreshScreen();
 }
 
@@ -50,60 +58,82 @@ function onOperator(operator) {
         calculateTotal();
     }
     if (currentOperator == null) {
-        currentTotal = parseInt(screenNumber);
+        currentTotal = currentNumber;
     }
     readyForNewNumber = true;
     currentOperator = operator;
 }
 
-function clearEverything() {
-    screenNumber = '0';
+function clearEverything(showError) {
+    currentNumber = 0; // need this to track decimals to higher precision than screen can show
     readyForNewNumber = true;
     currentTotal = 0;
     currentOperator = null;
-    refreshScreen();
+    if (!showError) {
+        screenNumber = currentNumber.toString();
+        refreshScreen();
+    }
 }
 
 function clearDisplay() {
-    screenNumber = '0';
+    currentNumber = 0; // need this to track decimals to higher precision than screen can show
+    screenNumber = currentNumber.toString();
     readyForNewNumber = true;
     refreshScreen();
 }
 
 function removeLastCharacter() {
-    // if screen number just calculated, can't edit it - if just calculated then it isn't a string:
-    if (typeof screenNumber !== 'string') {
+    // if screen number just calculated, then can't edit it
+    if (justCalculated) {
         return;
     }
     if (screenNumber.length <= 1) {
-        screenNumber = "0";
+        currentNumber = 0; // need this to track decimals to higher precision than screen can show
+        screenNumber = currentNumber.toString();
         readyForNewNumber = true;
     } else {
         screenNumber = screenNumber.slice(0, screenNumber.length - 1);
+        currentNumber = parseInt(screenNumber);
     }
     refreshScreen();
 }
 
 function calculateTotal() {
     if (currentOperator === '+') {
-        currentTotal+= parseInt(screenNumber);
+        currentTotal += latestEnteredNumber;
     } else if (currentOperator === '-') {
-        currentTotal-= parseInt(screenNumber);
+        currentTotal -= latestEnteredNumber;
     } else if (currentOperator === '*') {
-        currentTotal*= parseInt(screenNumber);
+        currentTotal *= latestEnteredNumber;
     } else if (currentOperator === '/') {
-        if (screenNumber === '0') {
-            alert("You can't divide by zero!");
+        if (currentNumber === 0) {
+            screenNumber = "Can't do x / 0."
             currentTotal = 0;
         } else {
-            currentTotal /= parseInt(screenNumber);
+            currentTotal /= latestEnteredNumber;
         }
     }
-    if (currentTotal.toString().length >= 11) {
-        screenNumber = "Too big.";
+
+    currentNumber = currentTotal;
+    if (screenNumber === "Can't do x / 0") {
+        clearEverything(true);
+    } else if (isNaN(currentTotal)) {
+        screenNumber = "Error.";
+        clearEverything(true);
+    } else if (currentTotal === Infinity) {
+        screenNumber = "Too big."
+        clearEverything(true);
     } else {
-        screenNumber = currentTotal;
+        screenNumber = currentNumber.toString();
+        if (screenNumber.length >= 11) {
+            screenNumber = restrictDigits(screenNumber);
+        }
     }
+    justCalculated = true;
     readyForNewNumber = true;
     refreshScreen();
+}
+
+function restrictDigits(numberAsString) {
+    return numberAsString;
 }
