@@ -69,6 +69,7 @@ function refreshScreen() {
 
 function onDigit(number) {
     if (screenNumber.length >= 11 && !readyForNewNumber) return; // don't let it run out of space
+    if (number === '.' && screenNumber.includes('.')) return; // don't allow multiple decimal points
     if (readyForNewNumber) {
         screenNumber = number;
         currentNumber = parseFloat(screenNumber);
